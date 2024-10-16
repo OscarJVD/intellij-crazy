@@ -1,577 +1,441 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Feliz Cumpleaños Montaña Rusa</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-      }
-      .message {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 4rem;
-        color: #fff;
-        display: none;
-      }
-      #startButton {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 1rem 2rem;
-        font-size: 2rem;
-        background-color: #ff6600;
-        color: white;
-        border: none;
-        cursor: pointer;
-        z-index: 10;
-      }
-      .sideText {
-        position: absolute;
-        font-size: 3rem;
-        color: #ff6600;
-        font-weight: bold;
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-      }
-      .sideText.left {
-        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-          sans-serif;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      .sideText.right {
-        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-          sans-serif;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Botón de inicio -->
-    <button id="startButton">Iniciar</button>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feliz Cumpleaños Montaña Rusa</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4rem;
+      color: #fff;
+      display: none;
+    }
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1rem 2rem;
+      font-size: 2rem;
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .sideText {
+      position: absolute;
+      font-size: 3rem;
+      color: #ff6600;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .sideText.left {
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .sideText.right {
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body>
+  <!-- Botón de inicio -->
+  <button id="startButton">Iniciar</button>
 
-    <div class="message" id="birthdayMessage">¡Feliz Cumpleaños!</div>
+  <div class="message" id="birthdayMessage">¡Feliz Cumpleaños!</div>
 
-    <!-- Textos laterales de "Feliz Cumpleaños" -->
-    <div class="sideText left" id="leftSideText">¡Feliz Cumpleaños!</div>
-    <div class="sideText right" id="rightSideText">¡Feliz Cumpleaños!</div>
+  <!-- Textos laterales de "Feliz Cumpleaños" -->
+  <div class="sideText left" id="leftSideText">¡Feliz Cumpleaños!</div>
+  <div class="sideText right" id="rightSideText">¡Feliz Cumpleaños!</div>
 
-    <!-- Reproducción de música en bucle -->
-    <audio id="backgroundMusic" loop>
-      <source src="gigi.mp3" type="audio/mp3" />
-      Tu navegador no soporta la reproducción de audio.
-    </audio>
+  <!-- Reproducción de música en bucle -->
+  <audio id="backgroundMusic" loop>
+    <source src="gigi.mp3" type="audio/mp3">
+    Tu navegador no soporta la reproducción de audio.
+  </audio>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-      let scene,
-        camera,
-        renderer,
-        rollerCoasterCurve,
-        car,
-        dummy,
-        confettiParticles = [],
-        birthdayTextMesh,
-        rails,
-        intellijLogos = [];
-      let speed = 0.00008; // Velocidad más lenta del carrito
-      let progress = 0;
-      let sideTextInterval;
-      let jumpHeight = 0.2; // Altura del salto
-      let bpm = 120; // Ritmo básico de la música
-      let railsToDisappear = []; // Almacenar las partes de la montaña rusa para desaparecerlas gradualmente
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, rollerCoasterCurve, car, dummy, confettiParticles = [], birthdayTextMesh, rails, intellijLogos = [];
+    let speed = 0.00008;  // Velocidad más lenta del carrito
+    let progress = 0;
+    let sideTextInterval;
+    let jumpHeight = 0.2;  // Altura del salto
+    let bpm = 120;  // Ritmo básico de la música
+    let railsToDisappear = [];  // Almacenar las partes de la montaña rusa para desaparecerlas gradualmente
 
-      // Función para reproducir el audio y sincronizar el baile
-      function playMusic() {
-        const audio = document.getElementById("backgroundMusic");
-        audio.play().catch((e) => {
-          console.log("Error reproduciendo música: ", e);
-        });
-        syncTextWithMusic(); // Sincronizar los textos con la música
-      }
+    // Función para reproducir el audio y sincronizar el baile
+    function playMusic() {
+      const audio = document.getElementById("backgroundMusic");
+      audio.play().catch((e) => {
+        console.log("Error reproduciendo música: ", e);
+      });
+      syncTextWithMusic();  // Sincronizar los textos con la música
+    }
 
-      // Sincronizar la aparición y desaparición de los textos laterales al ritmo de la música
-      function syncTextWithMusic() {
-        const interval = (60 / bpm) * 1000; // Tiempo entre beats
-        const leftText = document.getElementById("leftSideText");
-        const rightText = document.getElementById("rightSideText");
+    // Sincronizar la aparición y desaparición de los textos laterales al ritmo de la música
+    function syncTextWithMusic() {
+      const interval = (60 / bpm) * 1000;  // Tiempo entre beats
+      const leftText = document.getElementById("leftSideText");
+      const rightText = document.getElementById("rightSideText");
 
-        sideTextInterval = setInterval(() => {
-          leftText.style.opacity = leftText.style.opacity == "1" ? "0" : "1";
-          rightText.style.opacity = rightText.style.opacity == "1" ? "0" : "1";
-        }, interval);
-      }
+      sideTextInterval = setInterval(() => {
+        leftText.style.opacity = leftText.style.opacity == "1" ? "0" : "1";
+        rightText.style.opacity = rightText.style.opacity == "1" ? "0" : "1";
+      }, interval);
+    }
 
-      // Función para iniciar la animación y ocultar el botón
-      function startExperience() {
-        // Reproducir la música
-        playMusic();
+    // Función para iniciar la animación y ocultar el botón
+    function startExperience() {
+      // Reproducir la música
+      playMusic();
 
-        // Iniciar la escena
-        init();
+      // Iniciar la escena
+      init();
 
-        // Ocultar el botón de inicio
-        document.getElementById("startButton").style.display = "none";
-      }
+      // Ocultar el botón de inicio
+      document.getElementById("startButton").style.display = "none";
+    }
 
-      // Añadir el evento para que el botón inicie todo
-      document
-        .getElementById("startButton")
-        .addEventListener("click", startExperience);
+    // Añadir el evento para que el botón inicie todo
+    document.getElementById("startButton").addEventListener("click", startExperience);
 
-      // Inicializar la escena
-      function init() {
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(
-          75,
-          window.innerWidth / window.innerHeight,
-          0.1,
-          1000
-        );
-        renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+    // Inicializar la escena
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-        // Fondo de la escena (cielo azul)
-        scene.background = new THREE.Color(0x87ceeb);
+      // Fondo de la escena (cielo azul)
+      scene.background = new THREE.Color(0x87CEEB);
 
-        // Iluminación
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
+      // Iluminación
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(10, 20, 10);
-        scene.add(pointLight);
+      const pointLight = new THREE.PointLight(0xffffff, 1);
+      pointLight.position.set(10, 20, 10);
+      scene.add(pointLight);
 
-        // Crear el recorrido de la montaña rusa más largo y aleatorio
-        generateRandomRollerCoasterTrack();
+      // Crear el recorrido de la montaña rusa más largo y aleatorio
+      generateRandomRollerCoasterTrack();
 
-        // Crear el carrito de la montaña rusa
-        createRealisticCartWithLogo();
+      // Crear el carrito de la montaña rusa
+      createRealisticCartWithLogo();
 
-        // Crear el muñeco que estará sobre el carrito y bailará
-        createDancingDummy();
+      // Crear el muñeco que estará sobre el carrito y bailará
+      createDancingDummy();
 
-        // Crear las letras de "Feliz Cumpleaños" en 3D
-        create3DBirthdayMessage();
-
-        // Crear la lluvia de logos de IntelliJ
-        createIntellijLogoRain();
-
-        // Posicionar la cámara inicialmente
-        camera.position.set(0, 5, 20);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-        animate();
-      }
-
-      // Generar un recorrido aleatorio para la montaña rusa con más espacio y agregar rieles
-      function generateRandomRollerCoasterTrack() {
-        const points = [];
-        let currentPoint = new THREE.Vector3(0, 0, 0);
-        points.push(currentPoint.clone());
-
-        for (let i = 0; i < 300; i++) {
-          currentPoint.x += (Math.random() - 0.5) * 20; // Más espacio entre los puntos
-          currentPoint.y += (Math.random() - 0.5) * 10;
-          currentPoint.z += (Math.random() - 0.5) * 20;
-          points.push(currentPoint.clone());
-        }
-
-        rollerCoasterCurve = new THREE.CatmullRomCurve3(points);
-        const tubeGeometry = new THREE.TubeGeometry(
-          rollerCoasterCurve,
-          1000,
-          0.5,
-          8,
-          false
-        );
-        const tubeMaterial = new THREE.MeshStandardMaterial({
-          color: 0xff0000,
-        });
-        const rollerCoaster = new THREE.Mesh(tubeGeometry, tubeMaterial);
-        scene.add(rollerCoaster);
-
-        // Crear rieles de la montaña rusa
-        rails = createRails(rollerCoasterCurve, 1000);
-        scene.add(rails);
-      }
-
-      // Crear rieles a partir de la curva de la montaña rusa
-      function createRails(curve, segments) {
-        const railGroup = new THREE.Group();
-        const railGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
-        const railMaterial = new THREE.MeshStandardMaterial({
-          color: 0x555555,
-        });
-
-        for (let i = 0; i <= segments; i++) {
-          const point = curve.getPointAt(i / segments);
-          const tangent = curve.getTangentAt(i / segments);
-          const rail = new THREE.Mesh(railGeometry, railMaterial);
-          rail.position.copy(point);
-          rail.lookAt(point.clone().add(tangent));
-          rail.rotation.z = Math.PI / 2;
-          railGroup.add(rail);
-          railsToDisappear.push(rail); // Almacenar el riel para desaparecerlo más tarde
-        }
-
-        return railGroup;
-      }
-
-      // Crear un carrito con el logo de IntelliJ IDEA y ruedas
-      function createRealisticCartWithLogo() {
-        const cartGroup = new THREE.Group();
-
-        // Carrito con logo de IntelliJ IDEA
-        const cartBodyGeometry = new THREE.BoxGeometry(2, 1, 3);
-        const cartTexture = new THREE.TextureLoader().load(
-          "https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg"
-        ); // Logo de IntelliJ
-        const cartBodyMaterial = new THREE.MeshStandardMaterial({
-          map: cartTexture,
-        });
-        const cartBody = new THREE.Mesh(cartBodyGeometry, cartBodyMaterial);
-
-        // Crear ruedas para el carrito
-        const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.5, 32);
-        const wheelMaterial = new THREE.MeshStandardMaterial({
-          color: 0x000000,
-        });
-        const frontLeftWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-        const frontRightWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-        const backLeftWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-        const backRightWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-
-        // Posicionar las ruedas
-        frontLeftWheel.position.set(-1, -0.5, 1.5);
-        frontRightWheel.position.set(1, -0.5, 1.5);
-        backLeftWheel.position.set(-1, -0.5, -1.5);
-        backRightWheel.position.set(1, -0.5, -1.5);
-
-        // Girar las ruedas para que estén en la dirección correcta
-        frontLeftWheel.rotation.z = Math.PI / 2;
-        frontRightWheel.rotation.z = Math.PI / 2;
-        backLeftWheel.rotation.z = Math.PI / 2;
-        backRightWheel.rotation.z = Math.PI / 2;
-
-        // Agregar ruedas y cuerpo del carrito al grupo
-        cartGroup.add(
-          cartBody,
-          frontLeftWheel,
-          frontRightWheel,
-          backLeftWheel,
-          backRightWheel
-        );
-
-        // Añadir el carrito a la escena
-        scene.add(cartGroup);
-
-        car = cartGroup; // Referencia del carrito
-      }
-
-      // Crear el muñeco que estará sobre el carrito y bailará al ritmo de la música
-      function createDancingDummy() {
-        const dummyGroup = new THREE.Group();
-
-        // Cabeza del muñeco
-        const headGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        const headMaterial = new THREE.MeshStandardMaterial({
-          color: 0xffcc99,
-        });
-        const head = new THREE.Mesh(headGeometry, headMaterial);
-        head.position.y = 2.5;
-
-        // Cuello del muñeco
-        const neckGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16);
-        const neckMaterial = new THREE.MeshStandardMaterial({
-          color: 0xffcc99,
-        });
-        const neck = new THREE.Mesh(neckGeometry, neckMaterial);
-        neck.position.y = 2.1;
-
-        // Ojos (dos esferas pequeñas)
-        const eyeGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-        const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        leftEye.position.set(-0.2, 2.7, 0.45);
-        rightEye.position.set(0.2, 2.7, 0.45);
-
-        // Boca (un plano simple)
-        const mouthGeometry = new THREE.PlaneGeometry(0.3, 0.1);
-        const mouthMaterial = new THREE.MeshStandardMaterial({
-          color: 0xff0000,
-        });
-        const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
-        mouth.position.set(0, 2.3, 0.5);
-
-        // Cabello (media esfera)
-        const hairGeometry = new THREE.SphereGeometry(
-          0.35,
-          16,
-          16,
-          0,
-          Math.PI * 2,
-          0,
-          Math.PI / 2
-        );
-        const hairMaterial = new THREE.MeshStandardMaterial({
-          color: 0x000000,
-        }); // Cabello negro
-        const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-        hair.position.y = 3;
-
-        // Cuerpo del muñeco
-        const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.6, 1.5, 32);
-        const bodyMaterial = new THREE.MeshStandardMaterial({
-          color: 0x000000,
-        }); // Traje negro
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = 1.5;
-
-        // Piernas
-        const legGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 32);
-        const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-        const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-        leftLeg.position.set(-0.25, 0.5, 0);
-        rightLeg.position.set(0.25, 0.5, 0);
-
-        // Brazos
-        const armGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 32);
-        const armMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-        const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-        leftArm.position.set(-0.7, 2, 0);
-        rightArm.position.set(0.7, 2, 0);
-
-        // Carta de IntelliJ en la mano derecha
-        const cardGeometry = new THREE.PlaneGeometry(0.5, 0.5);
-        const cardTexture = new THREE.TextureLoader().load(
-          "https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg"
-        );
-        const cardMaterial = new THREE.MeshBasicMaterial({ map: cardTexture });
-        const card = new THREE.Mesh(cardGeometry, cardMaterial);
-        card.position.set(0.7, 2.5, 0); // Colocar la carta en la mano derecha
-        card.rotation.z = Math.PI / 2;
-
-        // Laptop en la mano izquierda
-        const laptopGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.3); // Cuerpo de la laptop
-        const laptopScreenGeometry = new THREE.PlaneGeometry(0.5, 0.3); // Pantalla de la laptop
-        const laptopMaterial = new THREE.MeshStandardMaterial({
-          color: 0x222222,
-        }); // Color del cuerpo de la laptop
-        const laptop = new THREE.Mesh(laptopGeometry, laptopMaterial);
-
-        const laptopScreenTexture = new THREE.TextureLoader().load(
-          "https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg"
-        ); // Logo en la pantalla
-        const laptopScreenMaterial = new THREE.MeshBasicMaterial({
-          map: laptopScreenTexture,
-        });
-        const laptopScreen = new THREE.Mesh(
-          laptopScreenGeometry,
-          laptopScreenMaterial
-        );
-
-        laptopScreen.position.set(0, 0.15, -0.15); // Colocar la pantalla en el lugar correcto
-        laptop.add(laptopScreen); // Añadir la pantalla a la laptop
-
-        laptop.position.set(-0.7, 2.5, 0); // Colocar la laptop en la mano izquierda
-        laptop.rotation.z = Math.PI / 2;
-
-        // Agregar todo al grupo del muñeco
-        dummyGroup.add(
-          head,
-          neck,
-          body,
-          leftLeg,
-          rightLeg,
-          leftArm,
-          rightArm,
-          card,
-          laptop,
-          leftEye,
-          rightEye,
-          mouth,
-          hair
-        );
-
-        // Posicionar el muñeco más cerca del carrito
-        dummyGroup.position.set(0, 0.3, 0); // Posición relativa al carrito
-
-        // Añadir el muñeco al carrito
-        car.add(dummyGroup);
-        dummy = dummyGroup; // Guardar referencia del muñeco para la animación
-      }
-
-      // Crear letras de "Feliz Cumpleaños" en 3D y animar el confeti
-      function create3DBirthdayMessage() {
-        const loader = new THREE.FontLoader();
-        loader.load(
-          "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
-          function (font) {
-            const textGeometry = new THREE.TextGeometry("¡Feliz Cumpleaños!", {
-              font: font,
-              size: 2,
-              height: 0.5,
-              curveSegments: 12,
-              bevelEnabled: true,
-              bevelThickness: 0.1,
-              bevelSize: 0.1,
-              bevelSegments: 5,
-            });
-            const textMaterial = new THREE.MeshStandardMaterial({
-              color: 0xffcc00,
-            });
-            birthdayTextMesh = new THREE.Mesh(textGeometry, textMaterial);
-            birthdayTextMesh.position.set(50, 5, 85); // Posicionar las letras al final del recorrido
-            scene.add(birthdayTextMesh);
-
-            // Crear confeti
-            for (let i = 0; i < 100; i++) {
-              const confettiGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-              const confettiMaterial = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(
-                  Math.random(),
-                  Math.random(),
-                  Math.random()
-                ),
-              });
-              const confetti = new THREE.Mesh(
-                confettiGeometry,
-                confettiMaterial
-              );
-              confetti.position.set(
-                50 + (Math.random() - 0.5) * 10,
-                10 + Math.random() * 5,
-                85 + (Math.random() - 0.5) * 10
-              );
-              confetti.velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.2,
-                Math.random() * 0.5,
-                (Math.random() - 0.5) * 0.2
-              );
-              scene.add(confetti);
-              confettiParticles.push(confetti);
-            }
-          }
-        );
-      }
+      // Crear las letras de "Feliz Cumpleaños" en 3D
+      create3DBirthdayMessage();
 
       // Crear la lluvia de logos de IntelliJ
-      function createIntellijLogoRain() {
-        for (let i = 0; i < 50; i++) {
-          const logoGeometry = new THREE.PlaneGeometry(1, 1);
-          const logoTexture = new THREE.TextureLoader().load(
-            "https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg"
-          );
-          const logoMaterial = new THREE.MeshBasicMaterial({
-            map: logoTexture,
-            transparent: true,
-          });
-          const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+      createIntellijLogoRain();
 
-          logoMesh.position.set(
-            (Math.random() - 0.5) * 100, // Posición X aleatoria
-            50 + Math.random() * 50, // Posición Y (alto) aleatoria
-            (Math.random() - 0.5) * 100 // Posición Z aleatoria
-          );
-          logoMesh.velocity = new THREE.Vector3(0, -Math.random() * 0.5, 0); // Velocidad de caída
+      // Posicionar la cámara inicialmente
+      camera.position.set(0, 5, 20);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-          scene.add(logoMesh);
-          intellijLogos.push(logoMesh);
-        }
+      animate();
+    }
+
+    // Generar un recorrido aleatorio para la montaña rusa con más espacio y agregar rieles
+    function generateRandomRollerCoasterTrack() {
+      const points = [];
+      let currentPoint = new THREE.Vector3(0, 0, 0);
+      points.push(currentPoint.clone());
+
+      for (let i = 0; i < 300; i++) {
+        currentPoint.x += (Math.random() - 0.5) * 20;  // Más espacio entre los puntos
+        currentPoint.y += (Math.random() - 0.5) * 10;
+        currentPoint.z += (Math.random() - 0.5) * 20;
+        points.push(currentPoint.clone());
       }
 
-      // Actualizar la posición de los logos de IntelliJ para simular la lluvia
-      function updateIntellijLogos() {
-        intellijLogos.forEach((logo) => {
-          logo.position.add(logo.velocity);
-          if (logo.position.y < -10) {
-            logo.position.y = 50 + Math.random() * 50; // Reiniciar la posición en lo alto
-          }
+      rollerCoasterCurve = new THREE.CatmullRomCurve3(points);
+      const tubeGeometry = new THREE.TubeGeometry(rollerCoasterCurve, 1000, 0.5, 8, false);
+      const tubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      const rollerCoaster = new THREE.Mesh(tubeGeometry, tubeMaterial);
+      scene.add(rollerCoaster);
+
+      // Crear rieles de la montaña rusa
+      rails = createRails(rollerCoasterCurve, 1000);
+      scene.add(rails);
+    }
+
+    // Crear rieles a partir de la curva de la montaña rusa
+    function createRails(curve, segments) {
+      const railGroup = new THREE.Group();
+      const railGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
+      const railMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+
+      for (let i = 0; i <= segments; i++) {
+        const point = curve.getPointAt(i / segments);
+        const tangent = curve.getTangentAt(i / segments);
+        const rail = new THREE.Mesh(railGeometry, railMaterial);
+        rail.position.copy(point);
+        rail.lookAt(point.clone().add(tangent));
+        rail.rotation.z = Math.PI / 2;
+        railGroup.add(rail);
+        railsToDisappear.push(rail);  // Almacenar el riel para desaparecerlo más tarde
+      }
+
+      return railGroup;
+    }
+
+    // Crear un carrito con el logo de IntelliJ IDEA y ruedas
+    function createRealisticCartWithLogo() {
+      const cartGroup = new THREE.Group();
+
+      // Carrito con logo de IntelliJ IDEA
+      const cartBodyGeometry = new THREE.BoxGeometry(2, 1, 3);
+      const cartTexture = new THREE.TextureLoader().load('https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg');  // Logo de IntelliJ
+      const cartBodyMaterial = new THREE.MeshStandardMaterial({ map: cartTexture });
+      const cartBody = new THREE.Mesh(cartBodyGeometry, cartBodyMaterial);
+
+      // Crear ruedas para el carrito
+      const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.5, 32);
+      const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      const frontLeftWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      const frontRightWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      const backLeftWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      const backRightWheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+
+      // Posicionar las ruedas
+      frontLeftWheel.position.set(-1, -0.5, 1.5);
+      frontRightWheel.position.set(1, -0.5, 1.5);
+      backLeftWheel.position.set(-1, -0.5, -1.5);
+      backRightWheel.position.set(1, -0.5, -1.5);
+
+      // Girar las ruedas para que estén en la dirección correcta
+      frontLeftWheel.rotation.z = Math.PI / 2;
+      frontRightWheel.rotation.z = Math.PI / 2;
+      backLeftWheel.rotation.z = Math.PI / 2;
+      backRightWheel.rotation.z = Math.PI / 2;
+
+      // Agregar ruedas y cuerpo del carrito al grupo
+      cartGroup.add(cartBody, frontLeftWheel, frontRightWheel, backLeftWheel, backRightWheel);
+
+      // Añadir el carrito a la escena
+      scene.add(cartGroup);
+
+      car = cartGroup;  // Referencia del carrito
+    }
+
+    // Crear el muñeco que estará sobre el carrito y bailará al ritmo de la música
+    function createDancingDummy() {
+      const dummyGroup = new THREE.Group();
+
+      // Cabeza del muñeco con textura personalizada (rostro.png)
+      const headGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+      const headTexture = new THREE.TextureLoader().load('rostro.png');  // Cargar la imagen del rostro
+      const headMaterial = new THREE.MeshStandardMaterial({ map: headTexture });  // Aplicar la textura del rostro
+      const head = new THREE.Mesh(headGeometry, headMaterial);
+      head.position.y = 2.5;
+
+      // Cuello del muñeco
+      const neckGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16);
+      const neckMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
+      const neck = new THREE.Mesh(neckGeometry, neckMaterial);
+      neck.position.y = 2.1;
+
+      // Cuerpo del muñeco
+      const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.6, 1.5, 32);
+      const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });  // Traje negro
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.position.y = 1.5;
+
+      // Piernas
+      const legGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 32);
+      const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+      const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+      leftLeg.position.set(-0.25, 0.5, 0);
+      rightLeg.position.set(0.25, 0.5, 0);
+
+      // Brazos
+      const armGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 32);
+      const armMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+      const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+      leftArm.position.set(-0.7, 2, 0);
+      rightArm.position.set(0.7, 2, 0);
+
+      // Carta de IntelliJ en la mano derecha
+      const cardGeometry = new THREE.PlaneGeometry(0.5, 0.5);
+      const cardTexture = new THREE.TextureLoader().load('https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg');
+      const cardMaterial = new THREE.MeshBasicMaterial({ map: cardTexture });
+      const card = new THREE.Mesh(cardGeometry, cardMaterial);
+      card.position.set(0.7, 2.5, 0);  // Colocar la carta en la mano derecha
+      card.rotation.z = Math.PI / 2;
+
+      // Laptop en la mano izquierda
+      const laptopGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.3);  // Cuerpo de la laptop
+      const laptopScreenGeometry = new THREE.PlaneGeometry(0.5, 0.3);  // Pantalla de la laptop
+      const laptopMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });  // Color del cuerpo de la laptop
+      const laptop = new THREE.Mesh(laptopGeometry, laptopMaterial);
+
+      const laptopScreenTexture = new THREE.TextureLoader().load('https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg');  // Logo en la pantalla
+      const laptopScreenMaterial = new THREE.MeshBasicMaterial({ map: laptopScreenTexture });
+      const laptopScreen = new THREE.Mesh(laptopScreenGeometry, laptopScreenMaterial);
+
+      laptopScreen.position.set(0, 0.15, -0.15);  // Colocar la pantalla en el lugar correcto
+      laptop.add(laptopScreen);  // Añadir la pantalla a la laptop
+
+      laptop.position.set(-0.7, 2.5, 0);  // Colocar la laptop en la mano izquierda
+      laptop.rotation.z = Math.PI / 2;
+
+      // Agregar todo al grupo del muñeco
+      dummyGroup.add(head, neck, body, leftLeg, rightLeg, leftArm, rightArm, card, laptop);
+
+      // Posicionar el muñeco más cerca del carrito
+      dummyGroup.position.set(0, 0.3, 0);  // Posición relativa al carrito
+
+      // Añadir el muñeco al carrito
+      car.add(dummyGroup);
+      dummy = dummyGroup;  // Guardar referencia del muñeco para la animación
+    }
+
+    // Crear letras de "Feliz Cumpleaños" en 3D y animar el confeti
+    function create3DBirthdayMessage() {
+      const loader = new THREE.FontLoader();
+      loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        const textGeometry = new THREE.TextGeometry('¡Feliz Cumpleaños!', {
+          font: font,
+          size: 2,
+          height: 0.5,
+          curveSegments: 12,
+          bevelEnabled: true,
+          bevelThickness: 0.1,
+          bevelSize: 0.1,
+          bevelSegments: 5
         });
-      }
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
+        birthdayTextMesh = new THREE.Mesh(textGeometry, textMaterial);
+        birthdayTextMesh.position.set(50, 5, 85);  // Posicionar las letras al final del recorrido
+        scene.add(birthdayTextMesh);
 
-      // Desaparecer gradualmente los rieles de la montaña rusa
-      function graduallyDisappearRails() {
-        if (railsToDisappear.length > 0) {
-          const rail = railsToDisappear.shift();
-          scene.remove(rail); // Desaparecer el riel
+        // Crear confeti
+        for (let i = 0; i < 100; i++) {
+          const confettiGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+          const confettiMaterial = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(Math.random(), Math.random(), Math.random())
+          });
+          const confetti = new THREE.Mesh(confettiGeometry, confettiMaterial);
+          confetti.position.set(50 + (Math.random() - 0.5) * 10, 10 + Math.random() * 5, 85 + (Math.random() - 0.5) * 10);
+          confetti.velocity = new THREE.Vector3((Math.random() - 0.5) * 0.2, Math.random() * 0.5, (Math.random() - 0.5) * 0.2);
+          scene.add(confetti);
+          confettiParticles.push(confetti);
         }
-      }
-
-      // Animación del carrito y el muñeco, sincronizado con la música
-      function animate() {
-        requestAnimationFrame(animate);
-
-        // Mover el carrito y el muñeco a lo largo de la curva
-        if (progress < 1) {
-          const point = rollerCoasterCurve.getPointAt(progress);
-          const tangent = rollerCoasterCurve.getTangentAt(progress);
-
-          car.position.copy(point);
-          car.lookAt(point.clone().add(tangent)); // Asegurar que el carrito siga la curva
-
-          // Posicionar la cámara detrás del carrito
-          const cameraOffset = new THREE.Vector3(0, 2, -5);
-          const cameraPosition = point.clone().add(cameraOffset);
-          camera.position.copy(cameraPosition);
-          camera.lookAt(car.position); // Hacer que la cámara siga al carrito
-
-          // Animar el muñeco para que baile mientras se mueve
-          const time = Date.now() * 0.001;
-
-          // Movimiento aleatorio de los brazos
-          dummy.children[4].rotation.z =
-            Math.sin(time * (Math.random() * 2 + 1)) * 0.5; // Brazo izquierdo
-          dummy.children[5].rotation.z =
-            -Math.sin(time * (Math.random() * 2 + 1)) * 0.5; // Brazo derecho
-
-          // Movimiento de las piernas desde los pies (cruzado)
-          dummy.children[2].rotation.x = Math.sin(time * 2) * 0.5; // Pierna izquierda desde el pie
-          dummy.children[3].rotation.x = -Math.sin(time * 2) * 0.5; // Pierna derecha desde el pie
-
-          // Salto (pequeños saltos hacia arriba y abajo)
-          dummy.position.y = 0.3 + Math.abs(Math.sin(time * 2)) * jumpHeight;
-
-          // Movimiento de la cabeza hacia adelante y hacia atrás
-          dummy.children[0].rotation.x = Math.sin(time * 2) * 0.2;
-
-          // Actualizar la lluvia de logos de IntelliJ
-          updateIntellijLogos();
-
-          // Desaparecer gradualmente los rieles de la montaña rusa
-          graduallyDisappearRails();
-
-          progress += speed;
-        }
-
-        renderer.render(scene, camera);
-      }
-
-      // Ajustar el tamaño del render cuando se cambia el tamaño de la ventana
-      window.addEventListener("resize", function () {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
       });
-    </script>
-  </body>
+    }
+
+    // Crear la lluvia de logos de IntelliJ
+    function createIntellijLogoRain() {
+      for (let i = 0; i < 50; i++) {
+        const logoGeometry = new THREE.PlaneGeometry(1, 1);
+        const logoTexture = new THREE.TextureLoader().load('https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA_icon.svg');
+        const logoMaterial = new THREE.MeshBasicMaterial({ map: logoTexture, transparent: true });
+        const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+
+        logoMesh.position.set(
+          (Math.random() - 0.5) * 100,  // Posición X aleatoria
+          50 + Math.random() * 50,  // Posición Y (alto) aleatoria
+          (Math.random() - 0.5) * 100  // Posición Z aleatoria
+        );
+        logoMesh.velocity = new THREE.Vector3(0, -Math.random() * 0.5, 0);  // Velocidad de caída
+
+        scene.add(logoMesh);
+        intellijLogos.push(logoMesh);
+      }
+    }
+
+    // Actualizar la posición de los logos de IntelliJ para simular la lluvia
+    function updateIntellijLogos() {
+      intellijLogos.forEach(logo => {
+        logo.position.add(logo.velocity);
+        if (logo.position.y < -10) {
+          logo.position.y = 50 + Math.random() * 50;  // Reiniciar la posición en lo alto
+        }
+      });
+    }
+
+    // Desaparecer gradualmente los rieles de la montaña rusa
+    function graduallyDisappearRails() {
+      if (railsToDisappear.length > 0) {
+        const rail = railsToDisappear.shift();
+        scene.remove(rail);  // Desaparecer el riel
+      }
+    }
+
+    // Animación del carrito y el muñeco, sincronizado con la música
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Mover el carrito y el muñeco a lo largo de la curva
+      if (progress < 1) {
+        const point = rollerCoasterCurve.getPointAt(progress);
+        const tangent = rollerCoasterCurve.getTangentAt(progress);
+
+        car.position.copy(point);
+        car.lookAt(point.clone().add(tangent));  // Asegurar que el carrito siga la curva
+
+        // Posicionar la cámara detrás del carrito
+        const cameraOffset = new THREE.Vector3(0, 2, -5);
+        const cameraPosition = point.clone().add(cameraOffset);
+        camera.position.copy(cameraPosition);
+        camera.lookAt(car.position);  // Hacer que la cámara siga al carrito
+
+        // Animar el muñeco para que baile mientras se mueve
+        const time = Date.now() * 0.001;
+
+        // Movimiento aleatorio de los brazos
+        dummy.children[4].rotation.z = Math.sin(time * (Math.random() * 2 + 1)) * 0.5;  // Brazo izquierdo
+        dummy.children[5].rotation.z = -Math.sin(time * (Math.random() * 2 + 1)) * 0.5;  // Brazo derecho
+
+        // Movimiento de las piernas desde los pies (cruzado)
+        dummy.children[2].rotation.x = Math.sin(time * 2) * 0.5;  // Pierna izquierda desde el pie
+        dummy.children[3].rotation.x = -Math.sin(time * 2) * 0.5; // Pierna derecha desde el pie
+
+        // Salto (pequeños saltos hacia arriba y abajo)
+        dummy.position.y = 0.3 + Math.abs(Math.sin(time * 2)) * jumpHeight;
+
+        // Movimiento de la cabeza hacia adelante y hacia atrás
+        dummy.children[0].rotation.x = Math.sin(time * 2) * 0.2;
+
+        // Actualizar la lluvia de logos de IntelliJ
+        updateIntellijLogos();
+
+        // Desaparecer gradualmente los rieles de la montaña rusa
+        graduallyDisappearRails();
+
+        progress += speed;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // Ajustar el tamaño del render cuando se cambia el tamaño de la ventana
+    window.addEventListener('resize', function () {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    });
+  </script>
+</body>
 </html>
